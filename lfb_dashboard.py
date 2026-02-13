@@ -514,24 +514,37 @@ st.pyplot(fig)
 
 st.subheader("First Pump Response Performance Against the 6-Minute Target")
 
-# Calculate the rate of incidents meeting the response target by incident type
+
+# Calculate compliance
+
 compliance_by_borough = (
-    filtered_df.groupby("IncGeo_BoroughName")["FirstPump_Within_6min"]
+    filtered_df
+    .groupby("IncGeo_BoroughName")["FirstPump_Within_6min"]
     .mean()
     .mul(100)
     .reset_index(name="CompliancePercent")
+    .sort_values("CompliancePercent")
 )
 
-# Sort ascending once
-compliance_sorted = compliance_by_borough.sort_values("CompliancePercent")
-
 # Select extremes
-bottom10_compliance = compliance_sorted.head(10)
-top10_compliance = compliance_sorted.tail(10)
+top10_compliance = compliance_by_borough.tail(10)
+bottom10_compliance = compliance_by_borough.head(10)
 
-# Sort both subsets descending (best at top)
-top10_compliance = top10_compliance.sort_values("CompliancePercent", ascending=False)
-bottom10_compliance = bottom10_compliance.sort_values("CompliancePercent", ascending=False)
+# Correct ordering:
+# Highest compliance at TOP
+top10_sorted = top10_compliance.sort_values(
+    "CompliancePercent",
+    ascending=False
+)
+
+# Lowest compliance:
+# "less bad" at top, worst at bottom
+bottom10_sorted = bottom10_compliance.sort_values(
+    "CompliancePercent",
+    ascending=True
+)
+
+# Plot
 
 sns.set_theme(style="white")
 
@@ -541,14 +554,16 @@ fig, (ax1, ax2) = plt.subplots(
     sharex=True
 )
 
-# Top 10 Highest Compliance
 
-high_palette = sns.color_palette("YlGn_r", n_colors=len(top10_compliance))
+# Highest Compliance
+
+high_palette = sns.color_palette("YlGn_r", len(top10_sorted))
 
 sns.barplot(
-    data=top10_compliance,
+    data=top10_sorted,
     y="IncGeo_BoroughName",
     x="CompliancePercent",
+    order=top10_sorted["IncGeo_BoroughName"],
     palette=high_palette,
     ax=ax1
 )
@@ -557,16 +572,15 @@ ax1.set_title("Top 10 Boroughs — Highest Compliance (%)", weight="bold")
 ax1.set_xlabel("")
 ax1.set_ylabel("")
 
+# Lowest Compliance
 
-# Bottom 10 Lowest Compliance
-
-
-low_palette = sns.color_palette("YlOrRd", n_colors=len(bottom10_compliance))
+low_palette = sns.color_palette("YlOrRd", len(bottom10_sorted))
 
 sns.barplot(
-    data=bottom10_compliance,
+    data=bottom10_sorted,
     y="IncGeo_BoroughName",
     x="CompliancePercent",
+    order=bottom10_sorted["IncGeo_BoroughName"],
     palette=low_palette,
     ax=ax2
 )
@@ -575,11 +589,12 @@ ax2.set_title("Top 10 Boroughs — Lowest Compliance (%)", weight="bold")
 ax2.set_xlabel("Compliance Rate (%)")
 ax2.set_ylabel("")
 
+ax2.set_xlim(0, 100)
+
 sns.despine()
 fig.tight_layout()
 
 st.pyplot(fig)
-
 
 #######################################################################################
 #######################################################################################
