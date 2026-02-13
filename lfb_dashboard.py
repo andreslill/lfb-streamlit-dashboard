@@ -439,6 +439,7 @@ sns.barplot(
     ax=ax1
 )
 
+# Reference line
 ax1.axvline(
     x=6,
     color="black",
@@ -446,15 +447,16 @@ ax1.axvline(
     linewidth=2
 )
 
+# Text LEFT of the line
 ax1.text(
-    5.95,
-    len(top10_fastest) - 0.5,  
+    5.95,                                # slightly left of 6
+    -0.5,                                 # near top
     "6-minute response target",
     fontsize=10,
-    ha="right",
-    va="top",
-    color="black"
+    ha="right",                           # right-aligned so text sits left of line
+    va="top"
 )
+
 ax1.set_title("Top 10 Fastest Boroughs (Median Response Time)", weight="bold")
 ax1.set_xlabel("")
 ax1.set_ylabel("")
