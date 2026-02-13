@@ -1,4 +1,14 @@
+st.title("Test")
 
+@st.cache_data
+def load_data():
+    return pd.read_parquet("lfb_streamlit.parquet")
+
+df = load_data()
+
+st.write(df.head())
+
+"""
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -1038,3 +1048,4 @@ with tab3:
 #######################################################################################
 #######################################################################################
 
+"""
