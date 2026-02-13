@@ -547,12 +547,12 @@ ax1.set_ylabel("")
 low_palette = sns.color_palette("YlOrRd", n_colors=len(bottom10_compliance))
 
 sns.barplot(
-    data=top10_compliance,
+    data=bottom10_compliance,
     y="IncGeo_BoroughName",
     x="CompliancePercent",
-    order=top10_compliance["IncGeo_BoroughName"],
-    palette=high_palette,
-    ax=ax1
+    order=bottom10_compliance["IncGeo_BoroughName"],
+    palette=low_palette,
+    ax=ax2
 )
 
 ax2.set_title("Top 10 Boroughs — Lowest Compliance (%)", weight="bold")
