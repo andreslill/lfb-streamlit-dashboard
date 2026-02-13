@@ -458,6 +458,7 @@ sns.barplot(
     order=fastest_sorted["IncGeo_BoroughName"],
     palette=fast_palette,
     ax=ax1
+)
     
 # Reference line
 ax1.axvline(
