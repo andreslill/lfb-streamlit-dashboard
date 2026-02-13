@@ -14,7 +14,9 @@ st.title("🚒 London Fire Brigade Incident & Response Time Analysis")
 # Load incidents_mobilisation_clean dataset 
 @st.cache_data
 def load_data():
-    return pd.read_parquet("lfb_streamlit.parquet")
+    df = pd.read_parquet("lfb_streamlit.parquet")
+    st.write("Data loaded:", df.shape)
+    return dfs
 
 df = load_data()
 
