@@ -14,9 +14,7 @@ st.title("🚒 London Fire Brigade Incident & Response Time Analysis")
 # Load incidents_mobilisation_clean dataset 
 @st.cache_data
 def load_data():
-    df = pd.read_parquet("lfb_streamlit.parquet")
-    st.write("Data loaded:", df.shape)
-    return df
+    return pd.read_parquet("lfb_streamlit.parquet")
 
 df = load_data()
 
@@ -113,7 +111,7 @@ avg_pumps = filtered_df["NumPumpsAttending"].mean()
    
 #######################################################################################
 #######################################################################################
-"""
+
 # Display KPIs
 st.subheader("Key Performance Indicators")
 
@@ -186,7 +184,7 @@ hue_order = [
     "Fire"
 ]
 
-# Plot all incident types (no totals)
+# Plot all incident types EXCEPT totals
 sns.lineplot(
     data=monthly_incident_counts_long[monthly_incident_counts_long["IncidentGroup"] != "All Incidents"],
     x="CallMonth",
@@ -199,7 +197,7 @@ sns.lineplot(
     ax=ax
 )
 
-# Plot all incidents separately with thicker line
+# Plot ALL INCIDENTS separately with thicker line
 sns.lineplot(
     data=monthly_incident_counts_long[monthly_incident_counts_long["IncidentGroup"] == "All Incidents"],
     x="CallMonth",
@@ -221,7 +219,7 @@ ax.set_xticklabels(['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct',
 # Get current handles and labels
 handles, labels = ax.get_legend_handles_labels()
 
-# Order
+# Desired order
 desired_order = [
     "All Incidents",
     "False Alarm",
@@ -395,7 +393,6 @@ sns.despine()
 fig.tight_layout()
 
 st.pyplot(fig)
-
 
 #######################################################################################
 #######################################################################################
@@ -1041,4 +1038,3 @@ with tab3:
 #######################################################################################
 #######################################################################################
 
-"""
