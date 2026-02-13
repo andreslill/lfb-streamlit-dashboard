@@ -396,54 +396,6 @@ st.pyplot(fig)
 #######################################################################################
 #######################################################################################
 
-st.subheader("Top 10 Special Service Categories")
-
-# Filter Special Service only
-special_df = filtered_df[
-    filtered_df["IncidentGroup"] == "Special Service"
-]
-
-# Count categories
-special_counts = (
-    special_df
-    .groupby("SpecialServiceType")
-    .size()
-    .reset_index(name="IncidentCount")
-    .sort_values("IncidentCount", ascending=False)
-    .head(10)
-)
-
-# Calculate percentage share
-special_counts["Percent"] = (
-    special_counts["IncidentCount"] /
-    special_counts["IncidentCount"].sum() * 100
-)
-
-sns.set_theme(style="white")
-
-fig, ax = plt.subplots(figsize=(10, 6))
-
-color = "#2350aa"
-
-sns.barplot(
-    data=special_counts,
-    x="IncidentCount",
-    y="SpecialServiceType",
-    color=color,
-    ax=ax
-)
-
-ax.set_title(
-    "Top 10 Special Service Incident Categories",
-    weight="bold"
-)
-ax.set_xlabel("Number of Incidents")
-ax.set_ylabel("")
-
-sns.despine()
-
-fig.tight_layout()
-st.pyplot(fig)
 
 
 #######################################################################################
