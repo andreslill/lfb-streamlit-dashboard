@@ -31,6 +31,7 @@ df["CallWeekday"] = pd.to_datetime(df["CallDate"]).dt.day_name()
 df["Year"] = df["CallDate"].dt.year
 df["Month"] = df["CallDate"].dt.month
 df["MonthName"] = df["CallDate"].dt.month_name()
+df["CallMonth"] = df["CallDate"].dt.month
 
 # Identify incidents where the first pump arrived within the 6-minute response target
 df["FirstPump_Within_6min"] = df["FirstPumpArriving_AttendanceTime"] <= 360
