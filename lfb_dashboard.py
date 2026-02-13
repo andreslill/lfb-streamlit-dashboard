@@ -398,64 +398,49 @@ st.pyplot(fig)
 #######################################################################################
 #######################################################################################
 
+st.subheader("Breakdown of Special Service Incidents")
 
-st.subheader("Special Service Categories: Median Response Time")
-
-# Filter for Special Service only
-special_df = filtered_df[
+# Filter Special Service incidents
+special_service_df = filtered_df[
     filtered_df["IncidentGroup"] == "Special Service"
-].copy()
+]
 
-# Calculate volume per category
-special_counts = (
-    special_df
-    .groupby("SpecialServiceType")
+if special_service_df.empty:
+    st.info("No Special Service incidents for selected filters.")
+    st.stop()
+
+# Count subcategories
+special_service_counts = (
+    special_service_df
+    .groupby("SpecialServiceType", observed=True)
     .size()
+    .sort_values(ascending=False)
+    .head(10)
     .reset_index(name="IncidentCount")
-    .sort_values("IncidentCount", ascending=False)
 )
 
-# Keep Top 10 by volume
-top10_categories = special_counts.head(10)["SpecialServiceType"]
-
-# Calculate median response time
-median_special = (
-    special_df[special_df["SpecialServiceType"].isin(top10_categories)]
-    .groupby("SpecialServiceType")["FirstPumpArriving_AttendanceTime"]
-    .median()
-    .div(60)
-    .reset_index(name="MedianResponseMinutes")
-    .sort_values("MedianResponseMinutes")
-)
-
+# Clean style
 sns.set_theme(style="white")
 
 fig, ax = plt.subplots(figsize=(10, 6))
 
-palette = sns.color_palette("RdYlGn_r", n_colors=len(median_special))
+dark_blue = sns.color_palette("colorblind")[0]
 
 sns.barplot(
-    data=median_special,
+    data=special_service_counts,
+    x="IncidentCount",
     y="SpecialServiceType",
-    x="MedianResponseMinutes",
-    palette=palette,
+    color=dark_blue,
     ax=ax
 )
 
-# 6-minute reference line
-ax.axvline(
-    x=6,
-    color="black",
-    linestyle="--",
-    linewidth=2
-)
-
-ax.set_title("Median Response Time by Special Service Category", weight="bold")
-ax.set_xlabel("Median Response Time (minutes)")
+ax.set_title("Top 10 Special Service Incident Categories", weight="bold")
+ax.set_xlabel("Number of Incidents")
 ax.set_ylabel("")
 
 sns.despine()
 fig.tight_layout()
+
 st.pyplot(fig)
 
 #######################################################################################
