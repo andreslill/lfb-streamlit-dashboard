@@ -346,7 +346,7 @@ sns.lineplot(
     ax=ax
 )
 
-# Plot ALL incidents separately thicker
+# Plot all incidents separately thicker
 sns.lineplot(
     data=avg_firstpump_attendance_long[
         avg_firstpump_attendance_long["IncidentGroup"] == "All Incidents"
@@ -447,13 +447,13 @@ ax1.axvline(
     linewidth=2
 )
 
-# Text LEFT of the line
+# Text left of the line
 ax1.text(
-    5.95,                                # slightly left of 6
-    -0.5,                                 # near top
+    5.95,                                
+    -0.5,                                 
     "6-minute response target",
     fontsize=10,
-    ha="right",                           # right-aligned so text sits left of line
+    ha="right",                           
     va="top"
 )
 
@@ -494,7 +494,7 @@ st.subheader("First Pump Response Performance Against the 6-Minute Target")
 
 # Calculate the rate of incidents meeting the response target by incident type
 compliance_by_borough = (
-    filtered_df.groupby("IncGeo_BoroughName")["FirstPump_Within_6min"]
+    filtered_df.groupby("IncGeo_BoroughName", observed=True)["FirstPump_Within_6min"]
     .mean()
     .mul(100)
     .reset_index(name="CompliancePercent")
@@ -504,8 +504,12 @@ compliance_by_borough = (
 compliance_sorted = compliance_by_borough.sort_values("CompliancePercent")
 
 # Select extremes
-bottom10_compliance = compliance_sorted.head(10)
-top10_compliance = compliance_sorted.tail(10)
+bottom10_compliance = compliance_sorted.head(10).copy()
+top10_compliance = compliance_sorted.tail(10).copy()
+
+# Convert categories to string (necessary for Streamlit)
+top10_compliance["IncGeo_BoroughName"] = top10_compliance["IncGeo_BoroughName"].astype(str)
+bottom10_compliance["IncGeo_BoroughName"] = bottom10_compliance["IncGeo_BoroughName"].astype(str)
 
 # Sort both subsets descending (best at top)
 top10_compliance = top10_compliance.sort_values("CompliancePercent", ascending=False)
@@ -527,6 +531,7 @@ sns.barplot(
     data=top10_compliance,
     y="IncGeo_BoroughName",
     x="CompliancePercent",
+    order=top10_compliance["IncGeo_BoroughName"],
     palette=high_palette,
     ax=ax1
 )
@@ -542,11 +547,12 @@ ax1.set_ylabel("")
 low_palette = sns.color_palette("YlOrRd", n_colors=len(bottom10_compliance))
 
 sns.barplot(
-    data=bottom10_compliance,
+    data=top10_compliance,
     y="IncGeo_BoroughName",
     x="CompliancePercent",
-    palette=low_palette,
-    ax=ax2
+    order=top10_compliance["IncGeo_BoroughName"],
+    palette=high_palette,
+    ax=ax1
 )
 
 ax2.set_title("Top 10 Boroughs — Lowest Compliance (%)", weight="bold")
