@@ -398,54 +398,6 @@ st.pyplot(fig)
 #######################################################################################
 #######################################################################################
 
-st.subheader("Breakdown of Special Service Incidents")
-
-# Filter Special Service incidents
-special_service_df = filtered_df[
-    filtered_df["IncidentGroup"] == "Special Service"
-]
-
-if special_service_df.empty:
-    st.info("No Special Service incidents for selected filters.")
-    st.stop()
-
-# Count subcategories
-special_service_counts = (
-    special_service_df
-    .groupby("SpecialServiceType", observed=True)
-    .size()
-    .sort_values(ascending=False)
-    .head(10)
-    .reset_index(name="IncidentCount")
-)
-
-# Clean style
-sns.set_theme(style="white")
-
-fig, ax = plt.subplots(figsize=(10, 6))
-
-dark_blue = sns.color_palette("colorblind")[0]
-
-sns.barplot(
-    data=special_service_counts,
-    x="IncidentCount",
-    y="SpecialServiceType",
-    color=dark_blue,
-    ax=ax
-)
-
-ax.set_title("Top 10 Special Service Incident Categories", weight="bold")
-ax.set_xlabel("Number of Incidents")
-ax.set_ylabel("")
-
-sns.despine()
-fig.tight_layout()
-
-st.pyplot(fig)
-
-#######################################################################################
-#######################################################################################
-
 st.subheader("Response Performance by Borough")
 
 median_response_by_borough = (
