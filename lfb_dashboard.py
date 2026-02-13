@@ -12,7 +12,12 @@ st.title("🚒 London Fire Brigade Incident & Response Time Analysis")
 #######################################################################################
 
 # Load incidents_mobilisation_clean dataset 
-df = pd.read_csv("incidents_mobilisation_clean.csv")
+url = "https://drive.google.com/uc?export=download&id=1FaWCJB7TZ4NVnUll2lGtUEzdBMP9f72o"
+@st.cache_data
+def load_data():
+    return pd.read_csv(url)
+
+df = load_data()
 
 # Feature Engineering
 
