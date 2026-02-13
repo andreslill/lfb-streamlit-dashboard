@@ -399,18 +399,27 @@ st.pyplot(fig)
 
 st.subheader("Response Performance by Borough")
 
-# Median response time by borough
 median_response_by_borough = (
-    filtered_df.groupby("IncGeo_BoroughName")["FirstPumpArriving_AttendanceTime"]
+    filtered_df
+    .groupby("IncGeo_BoroughName", observed=True)
+    ["FirstPumpArriving_AttendanceTime"]
     .median()
     .div(60)
     .reset_index(name="MedianResponseMinutes")
     .sort_values("MedianResponseMinutes")
 )
 
-# Select top and bottom 10 boroughs
-top10_fastest = median_response_by_borough.head(10)
-top10_slowest = median_response_by_borough.tail(10)
+# Top & Bottom 10
+top10_fastest = median_response_by_borough.head(10).copy()
+top10_slowest = median_response_by_borough.tail(10).copy()
+
+# Kategorie-Probleme entfernen
+top10_fastest["IncGeo_BoroughName"] = top10_fastest["IncGeo_BoroughName"].astype(str)
+top10_slowest["IncGeo_BoroughName"] = top10_slowest["IncGeo_BoroughName"].astype(str)
+
+# Reihenfolge explizit festlegen
+order_fast = top10_fastest["IncGeo_BoroughName"].tolist()
+order_slow = top10_slowest["IncGeo_BoroughName"].tolist()
 
 sns.set_theme(style="white")
 
@@ -420,65 +429,37 @@ fig, (ax1, ax2) = plt.subplots(
     sharex=True
 )
 
-# Top 10 Fastest
-fast_palette = sns.color_palette("YlGn_r", n_colors=len(top10_fastest))
-
+# FASTEST
 sns.barplot(
     data=top10_fastest,
     y="IncGeo_BoroughName",
     x="MedianResponseMinutes",
-    palette=fast_palette,
+    order=order_fast,
+    palette=sns.color_palette("YlGn_r", len(top10_fastest)),
     ax=ax1
 )
 
-# Reference line
-ax1.axvline(
-    x=6,
-    color="black",
-    linestyle="--",
-    linewidth=2
-)
-
-# Text LEFT of the line
-ax1.text(
-    5.95,                                
-    -0.5,                                 
-    "6-minute response target",
-    fontsize=10,
-    ha="right",                          
-    va="top"
-)
-
-
+ax1.axvline(6, linestyle="--", linewidth=2)
 ax1.set_title("Top 10 Fastest Boroughs (Median Response Time)", weight="bold")
 ax1.set_xlabel("")
 ax1.set_ylabel("")
 
-
-# Top 10 Slowest
-slow_palette = sns.color_palette("YlOrRd", n_colors=len(top10_slowest))
-
+# SLOWEST
 sns.barplot(
     data=top10_slowest,
     y="IncGeo_BoroughName",
     x="MedianResponseMinutes",
-    palette=slow_palette,
+    order=order_slow,
+    palette=sns.color_palette("YlOrRd", len(top10_slowest)),
     ax=ax2
 )
 
-ax2.axvline(
-    x=6,
-    color="black",
-    linestyle="--",
-    linewidth=2
-)
-
+ax2.axvline(6, linestyle="--", linewidth=2)
 ax2.set_title("Top 10 Slowest Boroughs (Median Response Time)", weight="bold")
 ax2.set_xlabel("Median Response Time (minutes)")
 ax2.set_ylabel("")
 
 sns.despine()
-
 fig.tight_layout()
 
 st.pyplot(fig)
