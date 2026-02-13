@@ -514,9 +514,7 @@ st.pyplot(fig)
 
 st.subheader("First Pump Response Performance Against the 6-Minute Target")
 
-
 # Calculate compliance
-
 compliance_by_borough = (
     filtered_df
     .groupby("IncGeo_BoroughName")["FirstPump_Within_6min"]
@@ -526,7 +524,7 @@ compliance_by_borough = (
     .sort_values("CompliancePercent")
 )
 
-# Select extremes
+# Select top10 highest and top10 lowest compliance
 top10_compliance = compliance_by_borough.tail(10)
 bottom10_compliance = compliance_by_borough.head(10)
 
@@ -541,7 +539,7 @@ top10_sorted = top10_compliance.sort_values(
 # "less bad" at top, worst at bottom
 bottom10_sorted = bottom10_compliance.sort_values(
     "CompliancePercent",
-    ascending=True
+    ascending=False
 )
 
 # Plot
