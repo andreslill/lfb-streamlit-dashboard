@@ -413,11 +413,11 @@ median_response_by_borough = (
 top10_fastest = median_response_by_borough.head(10).copy()
 top10_slowest = median_response_by_borough.tail(10).copy()
 
-# Kategorie-Probleme entfernen
+# fix category issues
 top10_fastest["IncGeo_BoroughName"] = top10_fastest["IncGeo_BoroughName"].astype(str)
 top10_slowest["IncGeo_BoroughName"] = top10_slowest["IncGeo_BoroughName"].astype(str)
 
-# Reihenfolge explizit festlegen
+# order
 order_fast = top10_fastest["IncGeo_BoroughName"].tolist()
 order_slow = top10_slowest["IncGeo_BoroughName"].tolist()
 
@@ -429,7 +429,7 @@ fig, (ax1, ax2) = plt.subplots(
     sharex=True
 )
 
-# FASTEST
+# Top 10 fastest
 sns.barplot(
     data=top10_fastest,
     y="IncGeo_BoroughName",
@@ -439,12 +439,27 @@ sns.barplot(
     ax=ax1
 )
 
-ax1.axvline(6, linestyle="--", linewidth=2)
+ax1.axvline(
+    x=6,
+    color="black",
+    linestyle="--",
+    linewidth=2
+)
+
+ax1.text(
+    5.95,
+    len(top10_fastest) - 0.5,  
+    "6-minute response target",
+    fontsize=10,
+    ha="right",
+    va="top",
+    color="black"
+)
 ax1.set_title("Top 10 Fastest Boroughs (Median Response Time)", weight="bold")
 ax1.set_xlabel("")
 ax1.set_ylabel("")
 
-# SLOWEST
+# Top 10 slowest
 sns.barplot(
     data=top10_slowest,
     y="IncGeo_BoroughName",
@@ -454,7 +469,13 @@ sns.barplot(
     ax=ax2
 )
 
-ax2.axvline(6, linestyle="--", linewidth=2)
+ax2.axvline(
+    x=6,
+    color="black",
+    linestyle="--",
+    linewidth=2
+)
+
 ax2.set_title("Top 10 Slowest Boroughs (Median Response Time)", weight="bold")
 ax2.set_xlabel("Median Response Time (minutes)")
 ax2.set_ylabel("")
