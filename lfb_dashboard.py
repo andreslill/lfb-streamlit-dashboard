@@ -16,7 +16,7 @@ st.title("🚒 London Fire Brigade Incident & Response Time Analysis")
 def load_data():
     df = pd.read_parquet("lfb_streamlit.parquet")
     st.write("Data loaded:", df.shape)
-    return dfs
+    return df
 
 df = load_data()
 
