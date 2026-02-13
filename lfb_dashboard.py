@@ -1,14 +1,4 @@
-st.title("Test")
 
-@st.cache_data
-def load_data():
-    return pd.read_parquet("lfb_streamlit.parquet")
-
-df = load_data()
-
-st.write(df.head())
-
-"""
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -21,7 +11,6 @@ st.title("🚒 London Fire Brigade Incident & Response Time Analysis")
 #######################################################################################
 #######################################################################################
 
-# Load incidents_mobilisation_clean dataset 
 @st.cache_data
 def load_data():
     return pd.read_parquet("lfb_streamlit.parquet")
@@ -41,7 +30,6 @@ df["CallWeekday"] = pd.to_datetime(df["CallDate"]).dt.day_name()
 df["Year"] = df["CallDate"].dt.year
 df["Month"] = df["CallDate"].dt.month
 df["MonthName"] = df["CallDate"].dt.month_name()
-df["CallMonth"] = df["CallDate"].dt.month
 
 # Identify incidents where the first pump arrived within the 6-minute response target
 df["FirstPump_Within_6min"] = df["FirstPumpArriving_AttendanceTime"] <= 360
@@ -356,7 +344,7 @@ sns.lineplot(
     ax=ax
 )
 
-# Plot all incidents separately thicker
+# Plot ALL incidents separately thicker
 sns.lineplot(
     data=avg_firstpump_attendance_long[
         avg_firstpump_attendance_long["IncidentGroup"] == "All Incidents"
@@ -407,29 +395,73 @@ st.pyplot(fig)
 #######################################################################################
 #######################################################################################
 
+st.subheader("Top 10 Special Service Categories")
+
+# Filter Special Service only
+special_df = filtered_df[
+    filtered_df["IncidentGroup"] == "Special Service"
+]
+
+# Count categories
+special_counts = (
+    special_df
+    .groupby("SpecialServiceType")
+    .size()
+    .reset_index(name="IncidentCount")
+    .sort_values("IncidentCount", ascending=False)
+    .head(10)
+)
+
+# Calculate percentage share
+special_counts["Percent"] = (
+    special_counts["IncidentCount"] /
+    special_counts["IncidentCount"].sum() * 100
+)
+
+sns.set_theme(style="white")
+
+fig, ax = plt.subplots(figsize=(10, 6))
+
+color = "#2350aa"
+
+sns.barplot(
+    data=special_counts,
+    x="IncidentCount",
+    y="SpecialServiceType",
+    color=color,
+    ax=ax
+)
+
+ax.set_title(
+    "Top 10 Special Service Incident Categories",
+    weight="bold"
+)
+ax.set_xlabel("Number of Incidents")
+ax.set_ylabel("")
+
+sns.despine()
+
+fig.tight_layout()
+st.pyplot(fig)
+
+
+#######################################################################################
+#######################################################################################
+
 st.subheader("Response Performance by Borough")
 
+# Median response time by borough
 median_response_by_borough = (
-    filtered_df
-    .groupby("IncGeo_BoroughName", observed=True)
-    ["FirstPumpArriving_AttendanceTime"]
+    filtered_df.groupby("IncGeo_BoroughName")["FirstPumpArriving_AttendanceTime"]
     .median()
     .div(60)
     .reset_index(name="MedianResponseMinutes")
     .sort_values("MedianResponseMinutes")
 )
 
-# Top & Bottom 10
-top10_fastest = median_response_by_borough.head(10).copy()
-top10_slowest = median_response_by_borough.tail(10).copy()
-
-# fix category issues
-top10_fastest["IncGeo_BoroughName"] = top10_fastest["IncGeo_BoroughName"].astype(str)
-top10_slowest["IncGeo_BoroughName"] = top10_slowest["IncGeo_BoroughName"].astype(str)
-
-# order
-order_fast = top10_fastest["IncGeo_BoroughName"].tolist()
-order_slow = top10_slowest["IncGeo_BoroughName"].tolist()
+# Select top and bottom 10 boroughs
+top10_fastest = median_response_by_borough.head(10)
+top10_slowest = median_response_by_borough.tail(10)
 
 sns.set_theme(style="white")
 
@@ -439,13 +471,14 @@ fig, (ax1, ax2) = plt.subplots(
     sharex=True
 )
 
-# Top 10 fastest
+# Top 10 Fastest
+fast_palette = sns.color_palette("YlGn_r", n_colors=len(top10_fastest))
+
 sns.barplot(
     data=top10_fastest,
     y="IncGeo_BoroughName",
     x="MedianResponseMinutes",
-    order=order_fast,
-    palette=sns.color_palette("YlGn_r", len(top10_fastest)),
+    palette=fast_palette,
     ax=ax1
 )
 
@@ -457,27 +490,29 @@ ax1.axvline(
     linewidth=2
 )
 
-# Text left of the line
+# Text LEFT of the line
 ax1.text(
     5.95,                                
     -0.5,                                 
     "6-minute response target",
     fontsize=10,
     ha="right",                           
-    va="top"
 )
+
 
 ax1.set_title("Top 10 Fastest Boroughs (Median Response Time)", weight="bold")
 ax1.set_xlabel("")
 ax1.set_ylabel("")
 
-# Top 10 slowest
+
+# Top 10 Slowest
+slow_palette = sns.color_palette("YlOrRd", n_colors=len(top10_slowest))
+
 sns.barplot(
     data=top10_slowest,
     y="IncGeo_BoroughName",
     x="MedianResponseMinutes",
-    order=order_slow,
-    palette=sns.color_palette("YlOrRd", len(top10_slowest)),
+    palette=slow_palette,
     ax=ax2
 )
 
@@ -493,6 +528,7 @@ ax2.set_xlabel("Median Response Time (minutes)")
 ax2.set_ylabel("")
 
 sns.despine()
+
 fig.tight_layout()
 
 st.pyplot(fig)
@@ -504,22 +540,18 @@ st.subheader("First Pump Response Performance Against the 6-Minute Target")
 
 # Calculate the rate of incidents meeting the response target by incident type
 compliance_by_borough = (
-    filtered_df.groupby("IncGeo_BoroughName", observed=True)["FirstPump_Within_6min"]
+    filtered_df.groupby("IncGeo_BoroughName")["FirstPump_Within_6min"]
     .mean()
     .mul(100)
     .reset_index(name="CompliancePercent")
 )
 
-# Sort ascending 
+# Sort ascending once
 compliance_sorted = compliance_by_borough.sort_values("CompliancePercent")
 
 # Select extremes
-bottom10_compliance = compliance_sorted.head(10).copy()
-top10_compliance = compliance_sorted.tail(10).copy()
-
-# Convert categories to string (necessary for Streamlit)
-top10_compliance["IncGeo_BoroughName"] = top10_compliance["IncGeo_BoroughName"].astype(str)
-bottom10_compliance["IncGeo_BoroughName"] = bottom10_compliance["IncGeo_BoroughName"].astype(str)
+bottom10_compliance = compliance_sorted.head(10)
+top10_compliance = compliance_sorted.tail(10)
 
 # Sort both subsets descending (best at top)
 top10_compliance = top10_compliance.sort_values("CompliancePercent", ascending=False)
@@ -541,7 +573,6 @@ sns.barplot(
     data=top10_compliance,
     y="IncGeo_BoroughName",
     x="CompliancePercent",
-    order=top10_compliance["IncGeo_BoroughName"],
     palette=high_palette,
     ax=ax1
 )
@@ -560,7 +591,6 @@ sns.barplot(
     data=bottom10_compliance,
     y="IncGeo_BoroughName",
     x="CompliancePercent",
-    order=bottom10_compliance["IncGeo_BoroughName"],
     palette=low_palette,
     ax=ax2
 )
@@ -585,8 +615,10 @@ filtered_df["ResponseMinutes"] = (
     filtered_df["FirstPumpArriving_AttendanceTime"] / 60
 )
 
-# Extreme delay KPI 
-extreme_delay_rate = ((filtered_df["ResponseMinutes"] > 10).mean() * 100)
+# Extreme delay KPI (GLOBAL)
+extreme_delay_rate = (
+    (filtered_df["ResponseMinutes"] > 10).mean() * 100
+)
 
 # Define bands
 bins = [0, 6, 8, 10, float("inf")]
@@ -1048,4 +1080,3 @@ with tab3:
 #######################################################################################
 #######################################################################################
 
-"""
