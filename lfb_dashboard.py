@@ -184,7 +184,7 @@ hue_order = [
     "Fire"
 ]
 
-# Plot all incident types EXCEPT totals
+# Plot all incident types (no totals)
 sns.lineplot(
     data=monthly_incident_counts_long[monthly_incident_counts_long["IncidentGroup"] != "All Incidents"],
     x="CallMonth",
@@ -197,7 +197,7 @@ sns.lineplot(
     ax=ax
 )
 
-# Plot ALL INCIDENTS separately with thicker line
+# Plot all incidents separately with thicker line
 sns.lineplot(
     data=monthly_incident_counts_long[monthly_incident_counts_long["IncidentGroup"] == "All Incidents"],
     x="CallMonth",
@@ -219,7 +219,7 @@ ax.set_xticklabels(['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct',
 # Get current handles and labels
 handles, labels = ax.get_legend_handles_labels()
 
-# Desired order
+# Order
 desired_order = [
     "All Incidents",
     "False Alarm",
@@ -392,6 +392,70 @@ sns.despine()
 
 fig.tight_layout()
 
+st.pyplot(fig)
+
+
+#######################################################################################
+#######################################################################################
+
+
+st.subheader("Special Service Categories: Median Response Time")
+
+# Filter for Special Service only
+special_df = filtered_df[
+    filtered_df["IncidentGroup"] == "Special Service"
+].copy()
+
+# Calculate volume per category
+special_counts = (
+    special_df
+    .groupby("SpecialServiceType")
+    .size()
+    .reset_index(name="IncidentCount")
+    .sort_values("IncidentCount", ascending=False)
+)
+
+# Keep Top 10 by volume
+top10_categories = special_counts.head(10)["SpecialServiceType"]
+
+# Calculate median response time
+median_special = (
+    special_df[special_df["SpecialServiceType"].isin(top10_categories)]
+    .groupby("SpecialServiceType")["FirstPumpArriving_AttendanceTime"]
+    .median()
+    .div(60)
+    .reset_index(name="MedianResponseMinutes")
+    .sort_values("MedianResponseMinutes")
+)
+
+sns.set_theme(style="white")
+
+fig, ax = plt.subplots(figsize=(10, 6))
+
+palette = sns.color_palette("RdYlGn_r", n_colors=len(median_special))
+
+sns.barplot(
+    data=median_special,
+    y="SpecialServiceType",
+    x="MedianResponseMinutes",
+    palette=palette,
+    ax=ax
+)
+
+# 6-minute reference line
+ax.axvline(
+    x=6,
+    color="black",
+    linestyle="--",
+    linewidth=2
+)
+
+ax.set_title("Median Response Time by Special Service Category", weight="bold")
+ax.set_xlabel("Median Response Time (minutes)")
+ax.set_ylabel("")
+
+sns.despine()
+fig.tight_layout()
 st.pyplot(fig)
 
 #######################################################################################
