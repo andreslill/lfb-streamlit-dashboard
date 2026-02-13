@@ -440,11 +440,11 @@ ax1.axvline(
 
 # Text LEFT of the line
 ax1.text(
-    5.95,                                # slightly left of 6
-    -0.5,                                 # near top
+    5.95,                                
+    -0.5,                                 
     "6-minute response target",
     fontsize=10,
-    ha="right",                           # right-aligned so text sits left of line
+    ha="right",                          
     va="top"
 )
 
@@ -495,7 +495,7 @@ compliance_by_borough = (
     .reset_index(name="CompliancePercent")
 )
 
-# Sort ascending once
+# Sort ascending 
 compliance_sorted = compliance_by_borough.sort_values("CompliancePercent")
 
 # Select extremes
@@ -564,10 +564,8 @@ filtered_df["ResponseMinutes"] = (
     filtered_df["FirstPumpArriving_AttendanceTime"] / 60
 )
 
-# Extreme delay KPI (GLOBAL)
-extreme_delay_rate = (
-    (filtered_df["ResponseMinutes"] > 10).mean() * 100
-)
+# Extreme delay KPI 
+extreme_delay_rate = ((filtered_df["ResponseMinutes"] > 10).mean() * 100)
 
 # Define bands
 bins = [0, 6, 8, 10, float("inf")]
